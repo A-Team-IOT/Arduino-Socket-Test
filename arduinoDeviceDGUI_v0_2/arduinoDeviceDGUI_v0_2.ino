@@ -45,6 +45,7 @@ class DGUI{
   String currentPinsName[]; 
   String registerListener; 
   String switchListener; 
+  String currentState; 
   int addComponent(String functionInput, pin functionPin, String componentType){
     // add component
     // functionInput = name of component; 
@@ -67,10 +68,8 @@ class DGUI{
     
     for(int i = 0; i < currentLength; i++){
       Serial.println(this->currentPinsName[i]);
-      Serial.println(this->currentPins[i].state());
-        
+      Serial.println(this->currentPins[i].state());   
     }
-    
     return returnObject; 
   }
   int createJsonObject(){
@@ -81,7 +80,19 @@ class DGUI{
     bool returnObject = true; 
     return returnObject; 
   }
-  
+  int checkConnection(){
+    bool returnObject = true;
+    return returnObject; 
+  }
+  int state(String functionInput){
+    //this is redundant at this moment - want to add more states and checks and balances to turning state off
+    if(functionInput == "on"){
+      this->currentState = "on";
+    }
+    if(functionInput == "off"){
+      this->currentState = "off"; 
+    }
+  }
 };
 
 
