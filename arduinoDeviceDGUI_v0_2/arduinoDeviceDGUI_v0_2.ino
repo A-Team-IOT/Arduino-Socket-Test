@@ -40,6 +40,39 @@ class pin{
       }
 };
 
+class DGUI{
+  pin currentPins[];
+  String currentPinsName[]; 
+  String registerListener; 
+  String switchListener; 
+  int addComponent(String functionInput, pin functionPin, String componentType){
+    // add component
+    // functionInput = name of component; 
+    // functionPin = pass it a pin that is configured; 
+    // componentType = type of component; 
+    bool returnObject = true; 
+    return returnObject; 
+  }
+  int removeComponent(string functionInput){
+    //remove component
+    bool returnObject = true; 
+    return returnObject; 
+  }
+  int printComponentInfo(){
+    bool returnObject = true; 
+    return returnObject; 
+  }
+  int createJsonObject(){
+    bool returnObject = true; 
+    return returnObject; 
+  }
+  int sendJsonObject(){
+    bool returnObject = true; 
+    return returnObject; 
+  }
+  
+};
+
 
 pin ledPin(7, OUTPUT);
 pin buttonPin(8, INPUT); 
