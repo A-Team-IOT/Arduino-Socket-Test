@@ -13,10 +13,15 @@
 
 
 SocketIOClient client;
+//base program serial print debug flag
+bool DBFB = true; 
 
 class pin{
   int pinNumber; 
   int previousState; 
+      public:int getPin(){
+      return this->pinNumber;
+      }
       void setMode(uint8_t pinType){
         if(pinType == INPUT){
         pinMode(this->pinNumber, INPUT);
@@ -42,6 +47,7 @@ class pin{
 
 class DGUI{
   pin currentPins[];
+  bool debugCheckValue = false; 
   String currentPinsName[]; 
   String registerListener; 
   String switchListener; 
@@ -93,7 +99,28 @@ class DGUI{
       this->currentState = "off"; 
     }
   }
+  void debugCheck(){
+    if(this->debugCheckValue == true){
+      //print important debug info about this current instance
+      Serial.println("Debug check is set"); 
+    }
+  }
 };
+
+void DBF(String functionInput){
+  if(DBFB == true){
+  Serial.println(functionInput); 
+  }
+}
+void togglePin(pin functionInput){
+  if(functionInput.state() == HIGH){
+    functionInput.changeState(LOW);
+    DBF("Pin: " + String(functionInput.getPin()) + " State: " + String(functionInput.state())); 
+  }else{
+    functionInput.changeState(HIGH);
+    DBF("Pin: " + String(functionInput.getPin()) + " State: " + String(functionInput.state())); 
+  }
+}
 
 
 pin ledPin(7, OUTPUT);
