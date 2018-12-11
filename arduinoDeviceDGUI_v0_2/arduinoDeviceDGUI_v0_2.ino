@@ -58,8 +58,17 @@ class DGUI{
     bool returnObject = true; 
     return returnObject; 
   }
+  size_t currentComponentSize(){
+    return (sizeof(currentPins) / sizeof(pin)); 
+  }
   int printComponentInfo(){
-    bool returnObject = true; 
+    bool returnObject = true;  
+    int currentLength = static_cast<int>this->currentComponentSize();
+    
+    for(int i = 0; i < currentLength; i++){
+      Serial.println(this->currentPins[i]);  
+    }
+    
     return returnObject; 
   }
   int createJsonObject(){
