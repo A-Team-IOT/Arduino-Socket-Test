@@ -1,6 +1,6 @@
-#include <socketIOClient.h>
+#include <SocketIOClient.h>
 #define W5100
-#include "Ethernet.h"
+#include <Ethernet.h>
 #include "SPI.h"
 
 /*
@@ -53,7 +53,7 @@ class DGUI{
     bool returnObject = true; 
     return returnObject; 
   }
-  int removeComponent(string functionInput){
+  int removeComponent(String functionInput){
     //remove component
     bool returnObject = true; 
     return returnObject; 
@@ -63,10 +63,12 @@ class DGUI{
   }
   int printComponentInfo(){
     bool returnObject = true;  
-    int currentLength = static_cast<int>this->currentComponentSize();
+    int currentLength = static_cast<int>(this->currentComponentSize());
     
     for(int i = 0; i < currentLength; i++){
-      Serial.println(this->currentPins[i]);  
+      Serial.println(this->currentPinsName[i]);
+      Serial.println(this->currentPins[i].state());
+        
     }
     
     return returnObject; 
@@ -101,7 +103,7 @@ int port = 8080;
 
 // Set the static IP address to use if the DHCP fails to assign
 
-IPAddress ip(68, 183, 70, 213);
+//IPAddress ip(68, 183, 70, 213);
 //IPAddress myDns(208, 67, 222, 222);
 //208.67.222.222
 
