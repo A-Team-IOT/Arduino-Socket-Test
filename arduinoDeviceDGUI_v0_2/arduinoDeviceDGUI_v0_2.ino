@@ -14,7 +14,14 @@
 
 SocketIOClient client;
 //base program serial print debug flag
-bool DBFB = true; 
+bool localDBFB = true; 
+
+void DBF(String functionInput){
+  if(localDBFB == true){
+  Serial.println(functionInput); 
+  }
+}
+
 
 class pin{
   int pinNumber; 
@@ -46,6 +53,10 @@ class pin{
 };
 
 class DGUI{
+  //TODO need to pass the client from the socketIOlib to this for now
+  //TODO implament this class into a lib that includes the components needed from socketIO
+  //TODO add serial menu
+  //TODO add switch class as a component of DGUI to eliminate currentpins array
   pin currentPins[];
   bool debugCheckValue = false; 
   String currentPinsName[]; 
@@ -53,7 +64,7 @@ class DGUI{
   String switchListener; 
   String currentState; 
   int addComponent(String functionInput, pin functionPin, String componentType){
-    // add component
+    // TODO add component to currentPins[] and add name to current pins as well  
     // functionInput = name of component; 
     // functionPin = pass it a pin that is configured; 
     // componentType = type of component; 
@@ -63,6 +74,7 @@ class DGUI{
   int removeComponent(String functionInput){
     //remove component
     bool returnObject = true; 
+    //TODO remove component by name 
     return returnObject; 
   }
   size_t currentComponentSize(){
@@ -71,7 +83,6 @@ class DGUI{
   int printComponentInfo(){
     bool returnObject = true;  
     int currentLength = static_cast<int>(this->currentComponentSize());
-    
     for(int i = 0; i < currentLength; i++){
       Serial.println(this->currentPinsName[i]);
       Serial.println(this->currentPins[i].state());   
@@ -79,19 +90,28 @@ class DGUI{
     return returnObject; 
   }
   int createJsonObject(){
-    bool returnObject = true; 
+    bool returnObject = true;
+    //TODO create json string  
     return returnObject; 
   }
-  int sendJsonObject(){
+  int sendJsonObjectRegister(){
     bool returnObject = true; 
+    //TODO send register json
+    return returnObject; 
+  }
+  int sendJsonObjectState(){
+    bool returnObject = true; 
+    //TODO send state json
     return returnObject; 
   }
   int checkConnection(){
     bool returnObject = true;
+    //TODO check client connection to the server
     return returnObject; 
   }
   int state(String functionInput){
     //this is redundant at this moment - want to add more states and checks and balances to turning state off
+    //this turns all components to off - no communication to the server 
     if(functionInput == "on"){
       this->currentState = "on";
     }
@@ -105,13 +125,13 @@ class DGUI{
       Serial.println("Debug check is set"); 
     }
   }
+  void wsLog(String functionInput){
+    //TODO add emit to log listener 
+    DBF(functionInput); 
+  }
 };
 
-void DBF(String functionInput){
-  if(DBFB == true){
-  Serial.println(functionInput); 
-  }
-}
+
 void togglePin(pin functionInput){
   if(functionInput.state() == HIGH){
     functionInput.changeState(LOW);
@@ -121,7 +141,6 @@ void togglePin(pin functionInput){
     DBF("Pin: " + String(functionInput.getPin()) + " State: " + String(functionInput.state())); 
   }
 }
-
 
 pin ledPin(7, OUTPUT);
 pin buttonPin(8, INPUT); 
@@ -157,18 +176,15 @@ long interval = 10000;
 int reading;
 
 void setup() {
-  //set pins to low
+  //TODO add the implementation of the DGUI
   ledPin.changeState(LOW); 
   buttonPin.changeState(LOW); 
-  //begin serial client
   Serial.begin(9600);
   Serial.println("...");
-  // wait for serial port to connect 
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
-  }
-  //TODO: add serial interaction for serial config of IP/login/pass/port 
-
+  } 
+  
   // start the Ethernet connection:
   Serial.println("Initialize Ethernet with DHCP:");
   if (Ethernet.begin(mac) == 0) {
@@ -199,7 +215,7 @@ void setup() {
   Serial.print("connecting to ");
   Serial.print(hostname);
   Serial.println("...");
-
+  //TODO remove connection test and replace with DGUI connection test 
   if (client.connect(hostname, hostnameshort, port))
   {
     Serial.println("DONE CONNECTING");
@@ -221,6 +237,7 @@ void loop() {
   reading = buttonPin.state();
   client.emit("dataFromDevice", "test"); 
   client.monitor();
+  //TODO: check button state and change ledpin based on button press
 
 }
 
