@@ -1,7 +1,8 @@
-#include <SocketIOClient.h>
+#include <socketIOClient.h>
 #define W5100
 #include <Ethernet.h>
 #include "SPI.h"
+
 
 /*
  * This is a test to connect an arduino uno with a W5100 ethernet shield to a NodeJS server with SocketIO. 
@@ -21,7 +22,7 @@ void DBF(String functionInput){
   Serial.println(functionInput); 
   }
 }
-
+ 
 class pin{
   int pinNumber; 
   int previousState; 
@@ -62,8 +63,8 @@ class DGUI{
   String registerListener; 
   String switchListener; 
   String currentState; 
-  String hostName; 
-  String hostNameShort; 
+  char hostName[40]; 
+  char hostNameShort[40]; 
   int port; 
   int addComponent(String functionInput, pin functionPin, String componentType){
     // TODO add component to currentPins[] and add name to current pins as well  
@@ -108,17 +109,18 @@ class DGUI{
   }
   int checkConnection(){
     bool returnObject = false;
-      if (client.connect(this->hostname, this->hostnameshort, this->port))
+      if (client.connect(this->hostName, this->hostNameShort, this->port))
           {
             DBF("Client Connection Successful");
-            DBF(hostname + hostnameshort + String(port));  
-            if(hostname == null | hostname == ""){
+            //TODO fix these empty tests - they are broken as of right now - I dont think I can compare char array to string
+            DBF(" " + String(this->hostName) + "  " + String(this->hostNameShort) + ":" + String(this->port));  
+            if(this->hostName == NULL | hostName == ""){
             DBF("variable hostname is empty"); 
             }
-            if(hostnameshort == null | hostnameshort == ""){
+            if(this->hostNameShort == NULL | this->hostNameShort == ""){
             DBF("variable hostnameshort is empty"); 
             }
-            if(port == null | String(port) == ""){
+            if(this->port == NULL | String(this->port) == ""){
             DBF("variable port is empty"); 
             }
             returnObject = true;
@@ -130,11 +132,10 @@ class DGUI{
           }
     return returnObject; 
   }
-  void setHostInfo(String inputHostName, String inputHostNameShort, int inputPort){
-    this->hostName = inputHostName; 
-    this->hostNameShort = inputHostNameShort; 
+  void setHostInfo(char inputHostName[], char inputHostNameShort[], int inputPort){
+    *this->hostName = *inputHostName; 
+    *this->hostNameShort = *inputHostNameShort; 
     this->port = inputPort;
-  }
   }
   int state(String functionInput){
     //this is redundant at this moment - want to add more states and checks and balances to turning state off
@@ -158,8 +159,10 @@ class DGUI{
   }
 };
 
+pin ledPin(7, OUTPUT);
+pin buttonPin(8, INPUT);
 
-void togglePin(pin functionInput){
+void togglePin(class pin functionInput){
   if(functionInput.state() == HIGH){
     functionInput.changeState(LOW);
     DBF("Pin: " + String(functionInput.getPin()) + " State: " + String(functionInput.state())); 
@@ -169,8 +172,7 @@ void togglePin(pin functionInput){
   }
 }
 
-pin ledPin(7, OUTPUT);
-pin buttonPin(8, INPUT); 
+ 
 
 long time = 0;         // the last time the output pin was toggled
 long debounce = 600;   // the debounce time, increase if the output flickers
