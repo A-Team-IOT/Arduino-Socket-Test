@@ -132,10 +132,13 @@ class DGUI{
           }
     return returnObject; 
   }
-  void setHostInfo(char inputHostName[], char inputHostNameShort[], int inputPort){
-    *this->hostName = *inputHostName; 
-    *this->hostNameShort = *inputHostNameShort; 
-    this->port = inputPort;
+  void setHostInfo(String inputHostName, String inputHostNameShort, int inputPort){
+    //apparently convert string to char array because idk what the fuck I am doing
+   for(int i = 0; i < inputHostName.length(); i++){
+      this->hostName[i] = inputHostName[i]; 
+    }
+    DBF(this->hostName);
+
   }
   int state(String functionInput){
     //this is redundant at this moment - want to add more states and checks and balances to turning state off
