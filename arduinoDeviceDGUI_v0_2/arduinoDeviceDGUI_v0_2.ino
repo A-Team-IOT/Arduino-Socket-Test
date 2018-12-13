@@ -22,7 +22,6 @@ void DBF(String functionInput){
   }
 }
 
-
 class pin{
   int pinNumber; 
   int previousState; 
@@ -63,6 +62,9 @@ class DGUI{
   String registerListener; 
   String switchListener; 
   String currentState; 
+  String hostName; 
+  String hostNameShort; 
+  int port; 
   int addComponent(String functionInput, pin functionPin, String componentType){
     // TODO add component to currentPins[] and add name to current pins as well  
     // functionInput = name of component; 
@@ -105,9 +107,34 @@ class DGUI{
     return returnObject; 
   }
   int checkConnection(){
-    bool returnObject = true;
-    //TODO check client connection to the server
+    bool returnObject = false;
+      if (client.connect(this->hostname, this->hostnameshort, this->port))
+          {
+            DBF("Client Connection Successful");
+            DBF(hostname + hostnameshort + String(port));  
+            if(hostname == null | hostname == ""){
+            DBF("variable hostname is empty"); 
+            }
+            if(hostnameshort == null | hostnameshort == ""){
+            DBF("variable hostnameshort is empty"); 
+            }
+            if(port == null | String(port) == ""){
+            DBF("variable port is empty"); 
+            }
+            returnObject = true;
+          }
+          else
+          {
+            DBF("Client Connection Failure"); 
+            returnObject = false;
+          }
     return returnObject; 
+  }
+  void setHostInfo(String inputHostName, String inputHostNameShort, int inputPort){
+    this->hostName = inputHostName; 
+    this->hostNameShort = inputHostNameShort; 
+    this->port = inputPort;
+  }
   }
   int state(String functionInput){
     //this is redundant at this moment - want to add more states and checks and balances to turning state off
@@ -216,20 +243,7 @@ void setup() {
   Serial.print(hostname);
   Serial.println("...");
   //TODO remove connection test and replace with DGUI connection test 
-  if (client.connect(hostname, hostnameshort, port))
-  {
-    Serial.println("DONE CONNECTING");
-    //On first connect, toggle off.
-    client.emit("toggleFromBoard", "false");
-    lastping = millis();
-   
-  }
-  else
-  {
-    Serial.println("CONNECTION ERROR");
-    while(1);
-  }
-  delay(1000);
+
 }
 
 void loop() {
