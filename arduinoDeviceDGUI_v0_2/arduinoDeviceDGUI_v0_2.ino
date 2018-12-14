@@ -19,7 +19,7 @@ bool localDBFB = true;
 
 void DBF(String functionInput){
   if(localDBFB == true){
-    if(functionInput[0] == "!"){
+    if(functionInput[0] == '!'){
       Serial.println("[WARN] " + functionInput.substring(1));  
     }else{
       Serial.println("[Log]  " + functionInput); 
@@ -28,9 +28,10 @@ void DBF(String functionInput){
 }
  
 class pin{
-  int pinNumber; 
+  int pinNumber = 0; 
   int previousState; 
-      public:int getPin(){
+      public:
+      int getPin(){
       return this->pinNumber;
       }
       void setMode(uint8_t pinType){
@@ -40,12 +41,18 @@ class pin{
         pinMode(this->pinNumber, OUTPUT);
         }
       }
-      public:pin::pin(int pinNumber, uint8_t pinType){
+      pin(int pinNumber, uint8_t pinType){
         this->pinNumber = pinNumber; 
         setMode(pinType); 
       }
+      pin(){
+      }
       uint8_t state(){
-      return digitalRead(this->pinNumber);
+        if(pinNumber == 0){
+          return 0; 
+        }else{
+          return digitalRead(this->pinNumber);
+        }
       }
       uint8_t prevState(){
       return this->previousState;
@@ -55,27 +62,60 @@ class pin{
         digitalWrite(this->pinNumber, state);
       }
 };
-
+class component{
+  public:
+    String componentName = "nullcomponent"; 
+    String componentType;
+    bool state = false;   
+    pin pinHolder = pin(); 
+    component::component(String conComName, String conComType, pin conPinHolder){
+    this->componentName = conComName; 
+    this->componentType = conComType; 
+    this->pinHolder = conPinHolder; 
+    }
+    component::component(){
+    }
+};
 class DGUI{
+  public:
+  DGUI::DGUI(component functionInput){
+  addComponent(functionInput); 
+  DBF("DGUI class instantiated with 1 new component.");
+  }
   //TODO need to pass the client from the socketIOlib to this for now
   //TODO implament this class into a lib that includes the components needed from socketIO
   //TODO add serial menu
   //TODO add switch class as a component of DGUI to eliminate currentpins array
-  pin currentPins[];
+  component currentComponent[100];
+  int currentMaxComponentIndex = 0; 
   bool debugCheckValue = false; 
-  String currentPinsName[]; 
   String registerListener; 
   String switchListener; 
   String currentState; 
   char hostName[40]; 
   char hostNameShort[40]; 
   int port; 
-  int addComponent(String functionInput, pin functionPin, String componentType){
+  DGUI::DGUI(){
+  DBF("DGUI class instantiated with no parameters."); 
+  }
+ 
+  int addComponent(component functionInput){
     // TODO add component to currentPins[] and add name to current pins as well  
     // functionInput = name of component; 
     // functionPin = pass it a pin that is configured; 
     // componentType = type of component; 
-    bool returnObject = true; 
+    bool returnObject = true;
+    for(int i = 0; i < sizeof(this->currentComponent)/sizeof(component); i++){
+      if(currentComponent[i].componentName == "nullcomponent"){
+        currentComponent[i].componentName = functionInput.componentName;
+        DBF("Component Added To Component List");
+        if(this->debugCheckValue == true){
+          printComponentInfo();  
+        }
+        break; 
+      }
+    }
+     
     return returnObject; 
   }
   int removeComponent(String functionInput){
@@ -85,30 +125,31 @@ class DGUI{
     return returnObject; 
   }
   size_t currentComponentSize(){
-    return (sizeof(currentPins) / sizeof(pin)); 
+    return (sizeof(currentComponent) / sizeof(component)); 
   }
   int printComponentInfo(){
     bool returnObject = true;  
     int currentLength = static_cast<int>(this->currentComponentSize());
     for(int i = 0; i < currentLength; i++){
-      Serial.println(this->currentPinsName[i]);
-      Serial.println(this->currentPins[i].state());   
+      Serial.println("Pin: " + this->currentComponent[i].componentName + " State: " + this->currentComponent[i].pinHolder.state());   
     }
     return returnObject; 
   }
   int createJsonObject(){
     bool returnObject = true;
-    //TODO create json string  
+    //TODO create json from components array  
     return returnObject; 
   }
-  int sendJsonObjectRegister(){
+  int sendJsonObjectRegister(String functionInput){
     bool returnObject = true; 
-    //TODO send register json
+      //TODO send register json
+      DBF("JSON [REGISTER]: " + functionInput); 
     return returnObject; 
   }
-  int sendJsonObjectState(){
+  int sendJsonObjectState(String functionInput){
     bool returnObject = true; 
     //TODO send state json
+    DBF("JSON [STATE]: " + functionInput); 
     return returnObject; 
   }
   int checkConnection(){
@@ -117,6 +158,15 @@ class DGUI{
           {
             DBF("Client Connection Successful");
             DBF(" " + String(this->hostName) + "  " + String(this->hostNameShort) + ":" + String(this->port));  
+              // give the Ethernet shield a second to initialize:
+            delay(1000);
+            Serial.print("connecting to ");
+            Serial.print(this->hostName);
+            returnObject = true;
+          }
+          else
+          {
+            DBF("!Client Connection Failure");  
             if(this->hostName == NULL | hostName == ""){
             DBF("!variable hostname is empty"); 
             }
@@ -126,15 +176,6 @@ class DGUI{
             if(this->port == NULL | String(this->port) == ""){
             DBF("!variable port is empty"); 
             }
-              // give the Ethernet shield a second to initialize:
-            delay(1000);
-            Serial.print("connecting to ");
-            Serial.print(hostname);
-            returnObject = true;
-          }
-          else
-          {
-            DBF("!Client Connection Failure"); 
             returnObject = false;
           }
     return returnObject; 
@@ -151,10 +192,22 @@ class DGUI{
     //this turns all components to off - no IE communication to the server 
     if(functionInput == "on"){
       this->currentState = "on";
+         int currentLength = static_cast<int>(this->currentComponentSize());
+         for(int i = 0; i < currentLength; i++){
+           if(currentComponent[i].componentName != "nullcomponent"){
+           currentComponent[i].state = true;    
+           }
+         }
       DBF("!ALL COMPONENTS SET TO ON"); 
     }
     if(functionInput == "off"){
-      this->currentState = "off"; 
+      this->currentState = "off";
+         int currentLength = static_cast<int>(this->currentComponentSize());
+         for(int i = 0; i < currentLength; i++){
+           if(currentComponent[i].componentName != "nullcomponent"){
+           currentComponent[i].state = false;   
+           }
+         } 
       DBF("!ALL COMPONENTS SET TO OFF"); 
     }
   }
@@ -192,79 +245,53 @@ long lastping = 0;
 
 byte mac[] = { 0x30, 0x30, 0x32, 0x38, 0x46, 0x38, 0x43, 0x43, 0x38, 0x35, 0x46, 0x44  };
 
-//TODO: make subdomain its own variable, im too stupid for this.
-char hostname[] = "http://68.183.70.213";
-char hostnameshort[] = "68.183.70.213";
-
-//localtunnel uses 80
-int port = 8080;
-
-// Set the static IP address to use if the DHCP fails to assign
-
-//IPAddress ip(68, 183, 70, 213);
-//IPAddress myDns(208, 67, 222, 222);
-//208.67.222.222
-
-//Pretty sure i dont need these anymore.
-
-extern String RID;
-extern String Rname;
-extern String Rcontent;
-
 unsigned long previousMillis = 0; 
 long interval = 10000; 
 
-int reading;
-
 void setup() {
-  //TODO add the implementation of the DGUI
   ledPin.changeState(LOW); 
   buttonPin.changeState(LOW); 
   Serial.begin(9600);
-  Serial.println("...");
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   } 
   
   // start the Ethernet connection:
-  Serial.println("Initialize Ethernet with DHCP:");
-  if (Ethernet.begin(mac) == 0) {
-    Serial.println("Failed to configure Ethernet using DHCP");
-    // Check for Ethernet hardware present
-    if (Ethernet.hardwareStatus() == EthernetNoHardware) {
-      Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
-      while (true) {
-        delay(1); // do nothing, no point running without Ethernet hardware
-      }
-    }
-    if (Ethernet.linkStatus() == LinkOFF) {
-      Serial.println("Ethernet cable is not connected.");
-    }
-    // try to congifure using IP address instead of DHCP:
-    Ethernet.begin(mac);
-  } else {
-    Serial.print("  DHCP assigned IP ");
-    Serial.println(Ethernet.localIP());
-  }
+//  Serial.println("Initialize Ethernet with DHCP:");
+//  if (Ethernet.begin(mac) == 0) {
+//    Serial.println("Failed to configure Ethernet using DHCP");
+//    // Check for Ethernet hardware present
+//    if (Ethernet.hardwareStatus() == EthernetNoHardware) {
+//      Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
+//      while (true) {
+//        delay(1); // do nothing, no point running without Ethernet hardware
+//      }
+//    }
+//    if (Ethernet.linkStatus() == LinkOFF) {
+//      Serial.println("Ethernet cable is not connected.");
+//    }
+//    // try to congifure using IP address instead of DHCP:
+//    Ethernet.begin(mac);
+//  } else {
+//    Serial.print("  DHCP assigned IP ");
+//    Serial.println(Ethernet.localIP());
+//  }
+  //create a component 
 
-  //Define the socketIO 'on' listener with funciton. "light" is the event, and light is the function to call...
-  client.on("onStateChange", light);
-
+  component demo; 
+  demo.componentName = "testCom"; 
+  DGUI testUI(demo);
+  testUI.checkConnection();
+  testUI.state("on");  
   
-
-
 }
 
 void loop() {
-  //Get current value of button
-  reading = buttonPin.state();
-  client.emit("dataFromDevice", "test"); 
-  client.monitor();
   //TODO: check button state and change ledpin based on button press
 
 }
 
-//TODO: why the fuck does this read 'ru' and 'als'...
+
 void light(String state) {
   Serial.println("[light] " + state);
   if (state == "ru") {
