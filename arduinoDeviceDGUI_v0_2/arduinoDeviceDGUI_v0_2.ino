@@ -116,22 +116,25 @@ class DGUI{
       if (client.connect(this->hostName, this->hostNameShort, this->port))
           {
             DBF("Client Connection Successful");
-            //TODO fix these empty tests - they are broken as of right now - I dont think I can compare char array to string
             DBF(" " + String(this->hostName) + "  " + String(this->hostNameShort) + ":" + String(this->port));  
             if(this->hostName == NULL | hostName == ""){
-            DBF("variable hostname is empty"); 
+            DBF("!variable hostname is empty"); 
             }
             if(this->hostNameShort == NULL | this->hostNameShort == ""){
-            DBF("variable hostnameshort is empty"); 
+            DBF("!variable hostnameshort is empty"); 
             }
             if(this->port == NULL | String(this->port) == ""){
-            DBF("variable port is empty"); 
+            DBF("!variable port is empty"); 
             }
+              // give the Ethernet shield a second to initialize:
+            delay(1000);
+            Serial.print("connecting to ");
+            Serial.print(hostname);
             returnObject = true;
           }
           else
           {
-            DBF("Client Connection Failure"); 
+            DBF("!Client Connection Failure"); 
             returnObject = false;
           }
     return returnObject; 
@@ -148,10 +151,11 @@ class DGUI{
     //this turns all components to off - no IE communication to the server 
     if(functionInput == "on"){
       this->currentState = "on";
-      DBF("!ALL COMPONENTS SET TO OFF"); 
+      DBF("!ALL COMPONENTS SET TO ON"); 
     }
     if(functionInput == "off"){
       this->currentState = "off"; 
+      DBF("!ALL COMPONENTS SET TO OFF"); 
     }
   }
   void debugCheck(){
@@ -247,12 +251,7 @@ void setup() {
   client.on("onStateChange", light);
 
   
-  // give the Ethernet shield a second to initialize:
-  delay(1000);
-  Serial.print("connecting to ");
-  Serial.print(hostname);
-  Serial.println("...");
-  //TODO remove connection test and replace with DGUI connection test 
+
 
 }
 
