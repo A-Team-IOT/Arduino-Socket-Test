@@ -1,4 +1,4 @@
-#include <socketIOClient.h>
+#include <SocketIOClient.h>
 #define W5100
 #include <Ethernet.h>
 #include "SPI.h"
@@ -19,7 +19,11 @@ bool localDBFB = true;
 
 void DBF(String functionInput){
   if(localDBFB == true){
-  Serial.println(functionInput); 
+    if(functionInput[0] == "!"){
+      Serial.println("[WARN] " + functionInput.substring(1));  
+    }else{
+      Serial.println("[Log]  " + functionInput); 
+    }
   }
 }
  
@@ -132,19 +136,19 @@ class DGUI{
           }
     return returnObject; 
   }
-  void setHostInfo(String inputHostName, String inputHostNameShort, int inputPort){
-    //apparently convert string to char array because idk what the fuck I am doing
+  void setHostInfo(const String inputHostName,const String inputHostNameShort, int inputPort){
+   //char arrays suck and so I did it this way because I would have to iterate through the input anyways if it was a char array :*(
    for(int i = 0; i < inputHostName.length(); i++){
       this->hostName[i] = inputHostName[i]; 
     }
     DBF(this->hostName);
-
   }
   int state(String functionInput){
-    //this is redundant at this moment - want to add more states and checks and balances to turning state off
-    //this turns all components to off - no communication to the server 
+    //this is redundant at this moment - want to add more component states/checks and balances to turning state off
+    //this turns all components to off - no IE communication to the server 
     if(functionInput == "on"){
       this->currentState = "on";
+      DBF("!ALL COMPONENTS SET TO OFF"); 
     }
     if(functionInput == "off"){
       this->currentState = "off"; 
@@ -154,6 +158,8 @@ class DGUI{
     if(this->debugCheckValue == true){
       //print important debug info about this current instance
       Serial.println("Debug check is set"); 
+    }else{
+      Serial.println("Debug check is not set");
     }
   }
   void wsLog(String functionInput){
@@ -162,8 +168,6 @@ class DGUI{
   }
 };
 
-pin ledPin(7, OUTPUT);
-pin buttonPin(8, INPUT);
 
 void togglePin(class pin functionInput){
   if(functionInput.state() == HIGH){
@@ -175,7 +179,8 @@ void togglePin(class pin functionInput){
   }
 }
 
- 
+pin ledPin(7, OUTPUT);
+pin buttonPin(8, INPUT); 
 
 long time = 0;         // the last time the output pin was toggled
 long debounce = 600;   // the debounce time, increase if the output flickers
