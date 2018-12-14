@@ -219,6 +219,15 @@ class DGUI{
       Serial.println("Debug check is not set");
     }
   }
+  void setDebugCheck(int functionInput){
+    if(functionInput == 0){
+      this->debugCheckValue = false;
+    }else{
+      this->debugCheckValue = true; 
+    }
+  }
+  
+  }
   void wsLog(String functionInput){
     //TODO add emit to log listener 
     DBF(functionInput); 
