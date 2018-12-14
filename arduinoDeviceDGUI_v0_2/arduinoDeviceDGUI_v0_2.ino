@@ -223,6 +223,10 @@ class DGUI{
     //TODO add emit to log listener 
     DBF(functionInput); 
   }
+  void wsCurrentState(){
+    //TODO add emit current state 
+    
+  }
 };
 
 
