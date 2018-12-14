@@ -167,7 +167,7 @@ class DGUI{
           else
           {
             DBF("!Client Connection Failure");  
-            if(this->hostName == NULL | hostName == ""){
+            if(strlen(this->hostName) | this->hostName == NULL | hostName == ""){
             DBF("!variable hostname is empty"); 
             }
             if(this->hostNameShort == NULL | this->hostNameShort == ""){
