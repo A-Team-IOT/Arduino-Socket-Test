@@ -1,4 +1,4 @@
-#include <SocketIOClient.h>
+#include <socketIOClient.h>
 #define W5100
 #include <Ethernet.h>
 #include "SPI.h"
@@ -12,8 +12,10 @@
  * which is a subdomain i use with localtunnel for testing. This should be changed accordingly.
 **/
 
-
-SocketIOClient client;
+char hostNamea[] = "witty-cat-82.localtunnel.me"; 
+char hostNameShorta[] = "witty-cat-82";
+int port = 80; 
+SocketIOClient *client = new SocketIOClient; 
 //base program serial print debug flag
 bool localDBFB = true; 
 
@@ -81,6 +83,9 @@ class DGUI{
   DGUI::DGUI(component functionInput){
   addComponent(functionInput); 
   DBF("DGUI class instantiated with 1 new component.");
+    for(int i = 0; i < strlen(hostName); i++){
+      Serial.print(hostName);
+    }
   }
   //TODO need to pass the client from the socketIOlib to this for now
   //TODO implament this class into a lib that includes the components needed from socketIO
@@ -92,8 +97,8 @@ class DGUI{
   String registerListener; 
   String switchListener; 
   String currentState; 
-  char hostName[40]; 
-  char hostNameShort[40]; 
+  const char hostName[] = "test";
+  const char hostNameShort[] = "test"; 
   int port; 
   DGUI::DGUI(){
   DBF("DGUI class instantiated with no parameters."); 
@@ -154,20 +159,20 @@ class DGUI{
   }
   int checkConnection(){
     bool returnObject = false;
-      if (client.connect(this->hostName, this->hostNameShort, this->port))
+      if (client->connect(hostNamea, hostNameShorta, this->port))
           {
             DBF("Client Connection Successful");
             DBF(" " + String(this->hostName) + "  " + String(this->hostNameShort) + ":" + String(this->port));  
               // give the Ethernet shield a second to initialize:
             delay(1000);
             Serial.print("connecting to ");
-            Serial.print(this->hostName);
+            Serial.print(*this->hostName);
             returnObject = true;
           }
           else
           {
             DBF("!Client Connection Failure");  
-            if(strlen(this->hostName) | this->hostName == NULL | hostName == ""){
+            if(strlen(this->hostName) | this->hostName == NULL | this->hostName == ""){
             DBF("!variable hostname is empty"); 
             }
             if(this->hostNameShort == NULL | this->hostNameShort == ""){
@@ -176,15 +181,13 @@ class DGUI{
             if(this->port == NULL | String(this->port) == ""){
             DBF("!variable port is empty"); 
             }
+            DBF(hostName);
             returnObject = false;
           }
     return returnObject; 
   }
   void setHostInfo(const String inputHostName,const String inputHostNameShort, int inputPort){
    //char arrays suck and so I did it this way because I would have to iterate through the input anyways if it was a char array :*(
-   for(int i = 0; i < inputHostName.length(); i++){
-      this->hostName[i] = inputHostName[i]; 
-    }
     DBF(this->hostName);
   }
   int state(String functionInput){
@@ -225,8 +228,6 @@ class DGUI{
     }else{
       this->debugCheckValue = true; 
     }
-  }
-  
   }
   void wsLog(String functionInput){
     //TODO add emit to log listener 
@@ -269,34 +270,47 @@ void setup() {
     ; // wait for serial port to connect. Needed for native USB port only
   } 
   
-  // start the Ethernet connection:
-//  Serial.println("Initialize Ethernet with DHCP:");
-//  if (Ethernet.begin(mac) == 0) {
-//    Serial.println("Failed to configure Ethernet using DHCP");
-//    // Check for Ethernet hardware present
-//    if (Ethernet.hardwareStatus() == EthernetNoHardware) {
-//      Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
-//      while (true) {
-//        delay(1); // do nothing, no point running without Ethernet hardware
-//      }
-//    }
-//    if (Ethernet.linkStatus() == LinkOFF) {
-//      Serial.println("Ethernet cable is not connected.");
-//    }
-//    // try to congifure using IP address instead of DHCP:
-//    Ethernet.begin(mac);
-//  } else {
-//    Serial.print("  DHCP assigned IP ");
-//    Serial.println(Ethernet.localIP());
-//  }
-  //create a component 
+   //start the Ethernet connection:
+  Serial.println("Initialize Ethernet with DHCP:");
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println("Failed to configure Ethernet using DHCP");
+    // Check for Ethernet hardware present
+    if (Ethernet.hardwareStatus() == EthernetNoHardware) {
+      Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
+      while (true) {
+        delay(1); // do nothing, no point running without Ethernet hardware
+      }
+    }
+    if (Ethernet.linkStatus() == LinkOFF) {
+      Serial.println("Ethernet cable is not connected.");
+    }
+    // try to congifure using IP address instead of DHCP:
+    Ethernet.begin(mac);
+  } else {
+    Serial.print("  DHCP assigned IP ");
+    Serial.println(Ethernet.localIP());
+  }
+    //create a component 
 
   component demo; 
   demo.componentName = "testCom"; 
-  DGUI testUI(demo);
-  testUI.checkConnection();
+  DGUI testUI(demo); 
+  //testUI.checkConnection();
   testUI.state("on");  
-  
+    if (client->connect(hostNamea, hostNameShorta, port))
+  {
+    Serial.println("DONE CONNECTING");
+    //On first connect, toggle off.
+    //client.emit("logListener", "test this register thing here");
+    lastping = millis();
+   
+  }
+  else
+  {
+    Serial.println("CONNECTION ERROR");
+    while(1);
+  }
+  delay(1000);
 }
 
 void loop() {
